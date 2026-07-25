@@ -128,7 +128,7 @@ moduregis-ee/          Enterprise extensions (private, Enterprise License)
 - [OSS/EE Boundary](docs/editions.md)
 - [Development Guide](docs/operations/development.md)
 - [Integration Contracts](docs/integrations/interop.md)
-- [ADR Index](docs/adr/)
+- [License](LICENSE)
 
 ## License
 
