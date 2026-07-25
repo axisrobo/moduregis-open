@@ -9,7 +9,7 @@ MODUREGIS provides a governed lifecycle for enterprise capabilities — declared
 ### Open Core Capabilities
 
 - **Capability Contract** — Versioned JSON Schema definition, positive/negative fixtures, and a compatibility policy for enterprise capability declarations.
-- **Contract Validation** — Schema-driven linter and fixture-based conformance harness (`npm run test:contracts`).
+- **Contract Validation** — Versioned JSON Schemas and positive/negative fixtures serve as the conformance reference for any SDK or executor adapter.
 - **Catalog API Contracts** — REST API surface for capability discovery and resolution, including intent matching and candidate explanation.
 - **Governance Adapter Contracts** — Versioned, language-neutral contracts for integrating AEGIVELA (authorization), ORCHADYN (planning), PRAXOVELA (execution), RHEOVELA (workflow), MNEMOVELA (memory), and Harmovela (coordination).
 - **Console** — TypeScript/React reference Console for capability Catalog, publication workflow, and audit views.
@@ -73,26 +73,11 @@ The API requires PostgreSQL 16 and the following environment variables:
 | `AEGIVELA_INTERNAL_TOKEN` | remote | Internal service authentication |
 | `LISTEN_ADDR` | no | Listen address (default `:8080`) |
 
-See [development guide](docs/operations/development.md) for the PostgreSQL Compose environment.
-
-### Contract Validation
-
-```bash
-npm install
-npm run test:contracts
-```
-
-This validates all published Capability and Adapter contracts against their JSON Schemas and fixture sets. No credentials or database connection required.
+See the [architecture overview](docs/architecture/overview.md) for the deployment topology and PostgreSQL setup.
 
 ### Console
 
-```bash
-cd frontend/console
-npm install
-npm run dev
-```
-
-The Console is a browser-based reference UI for the MODUREGIS control plane. It does not connect directly to PostgreSQL.
+The Console is a TypeScript/React reference UI for the MODUREGIS control plane. See [frontend/console](frontend/console/) for source and build instructions. It proxies to a running MODUREGIS API instance and does not connect directly to PostgreSQL.
 
 ## Integration Profiles
 

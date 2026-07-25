@@ -1,4 +1,6 @@
 go 1.23.0
 
-use ./sdk/go
-// use ./examples/web-api-example
+use (
+	./sdk/go
+	./examples/web-api-example
+)
