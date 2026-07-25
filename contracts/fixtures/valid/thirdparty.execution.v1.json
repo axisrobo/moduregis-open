@@ -1,0 +1,12 @@
+{
+  "api_version": "moduregis.io/v1alpha1",
+  "kind": "Adapter",
+  "id": "thirdparty.custom_executor",
+  "adapter_kind": "execution",
+  "vendor": "Example Systems",
+  "version": "1.0.0",
+  "contract_version": "v1",
+  "endpoint_ref": "moduregis-adapter://example-systems/custom-executor",
+  "supported_capability_types": ["api.operation", "agent.skill"],
+  "conformance_profiles": ["CAP-C0"]
+}

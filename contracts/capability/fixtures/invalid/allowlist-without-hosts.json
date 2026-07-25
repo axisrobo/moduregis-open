@@ -1,0 +1,27 @@
+{
+  "api_version": "moduregis.io/v1alpha1",
+  "kind": "Capability",
+  "id": "engineering.quality.example",
+  "version": "1.0.0",
+  "display_name": "Incomplete network boundary",
+  "description": "Allowlisted network mode requires an explicit host list.",
+  "signature": {
+    "inputs": {},
+    "outputs": {},
+    "preconditions": [],
+    "postconditions": []
+  },
+  "permissions": {
+    "scope": [{"permission": "repo:read"}],
+    "network": {"mode": "allowlisted"},
+    "filesystem": {"mode": "none"}
+  },
+  "owner": {"subject_ref": "aegivela://groups/platform", "team": "Platform"},
+  "executor": {"kind": "praxovela", "ref": "praxovela://executors/example"},
+  "governance": {
+    "risk_level": "L1",
+    "policy_set_ref": "aegivela://policy-sets/example",
+    "approval_mode": "not_required",
+    "evidence_profile": "standard"
+  }
+}

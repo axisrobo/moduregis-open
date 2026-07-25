@@ -1,0 +1,95 @@
+{
+  "api_version": "moduregis.io/v1alpha1",
+  "kind": "Capability",
+  "id": "engineering.quality.code_review",
+  "version": "1.0.0-rc.1+build.7",
+  "display_name": "Repository code review",
+  "description": "Reviews a repository change set and returns structured findings.",
+  "tags": ["engineering", "quality", "review"],
+  "signature": {
+    "inputs": {
+      "repository": {
+        "type": "git_repository",
+        "schema": "schemas/repository.input.schema.json",
+        "required": true
+      },
+      "base_ref": {
+        "type": "git_ref",
+        "required": false
+      }
+    },
+    "outputs": {
+      "findings": {
+        "type": "code_review_findings",
+        "schema": "schemas/findings.output.schema.json"
+      }
+    },
+    "preconditions": [
+      {
+        "id": "engineering.repository.accessible"
+      }
+    ],
+    "postconditions": [],
+    "effects": [
+      {
+        "action": "read",
+        "resource": "repository:source",
+        "classification": ["internal"],
+        "reversible": true
+      }
+    ],
+    "idempotency": {
+      "mode": "idempotent_with_freshness",
+      "freshness_window_ms": 300000
+    },
+    "recovery": {
+      "retry_strategy": "exponential_backoff",
+      "max_retries": 3
+    }
+  },
+  "permissions": {
+    "scope": [
+      {
+        "permission": "repo:read",
+        "resource": "repository:source"
+      }
+    ],
+    "network": {
+      "mode": "allowlisted",
+      "hosts": ["github.example.com"]
+    },
+    "filesystem": {
+      "mode": "read_only",
+      "paths": ["/workspace/repository"]
+    },
+    "max_runtime_ms": 120000,
+    "max_memory_mb": 1024
+  },
+  "enterprise": {
+    "business_domain": ["Engineering", "Security"],
+    "regions": ["global"],
+    "business_capabilities": ["engineering.software_quality"],
+    "apqc_processes": [
+      {
+        "category_id": "8.2.1",
+        "process_name": "Develop and manage products and services",
+        "level": 3
+      }
+    ],
+    "compliance_frameworks": ["SOC2", "ISO27001"]
+  },
+  "owner": {
+    "subject_ref": "aegivela://groups/engineering-platform",
+    "team": "Engineering Platform"
+  },
+  "executor": {
+    "kind": "praxovela",
+    "ref": "praxovela://executors/code-review"
+  },
+  "governance": {
+    "risk_level": "L2",
+    "policy_set_ref": "aegivela://policy-sets/engineering-review-v1",
+    "approval_mode": "policy_determined",
+    "evidence_profile": "standard"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.axisrobo.com/moduregis.intent.v1alpha1.schema.json",
+  "title": "Moduregis Intent v1alpha1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "kind", "namespace"],
+  "properties": {
+    "api_version": { "const": "moduregis.io/v1alpha1" },
+    "kind": { "const": "Intent" },
+    "namespace": { "type": "string", "minLength": 1 },
+    "capability_type": { "type": "string", "minLength": 1 },
+    "capability_id": { "type": "string", "minLength": 1 },
+    "verbs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "entities": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+  },
+  "anyOf": [
+    { "required": ["capability_id"], "properties": { "capability_id": true } },
+    { "required": ["capability_type"], "properties": { "capability_type": true } },
+    { "required": ["verbs"], "properties": { "verbs": true } },
+    { "required": ["entities"], "properties": { "entities": true } }
+  ]
+}

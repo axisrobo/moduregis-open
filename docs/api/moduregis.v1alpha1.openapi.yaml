@@ -1,0 +1,162 @@
+openapi: 3.1.0
+info:
+  title: Moduregis API
+  version: v1alpha1
+  description: |
+    Versioned control-plane API. Capability discovery, publication, and invocation
+    endpoints will require AEGIVELA-backed authorization before publication.
+paths:
+  /v1/health:
+    get:
+      operationId: getHealth
+      summary: Report versioned control-plane availability
+      responses:
+        '200':
+          description: Moduregis and PostgreSQL are available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: PostgreSQL is unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /v1/capabilities:
+    get:
+      operationId: listCapabilities
+      summary: List Registry versions in an authorized namespace
+      description: |
+        The AEGIVELA adapter derives tenant identity from the bearer artifact.
+        This Registry listing is not an executable authorization decision.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+      responses:
+        '200':
+          description: Tenant-scoped Registry version summaries.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilityList'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/capabilities/{id}/versions/{version}:
+    get:
+      operationId: getCapabilityVersion
+      summary: Read one immutable Capability Contract version
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Authorized immutable Contract version.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilityDetail'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: AEGIVELA-issued authorization artifact.
+  parameters:
+    Namespace:
+      name: namespace
+      in: query
+      required: true
+      schema: { type: string, minLength: 1 }
+  responses:
+    MissingBearer:
+      description: No bearer artifact was supplied.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/APIError' }
+    AuthorizationDenied:
+      description: AEGIVELA denied the requested Capability read.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/APIError' }
+    AuthorizationUnavailable:
+      description: No configured AEGIVELA adapter can evaluate this request.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/APIError' }
+    CapabilityNotFound:
+      description: The requested version is not present in the authorized tenant namespace.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/APIError' }
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [api_version, status]
+      properties:
+        api_version:
+          const: moduregis.io/v1alpha1
+        status:
+          enum: [ok, unavailable]
+    CapabilitySummary:
+      type: object
+      additionalProperties: false
+      required: [id, version, state, contract_digest]
+      properties:
+        id: { type: string }
+        version: { type: string }
+        state: { type: string }
+        contract_digest: { type: string }
+    CapabilityList:
+      type: object
+      additionalProperties: false
+      required: [api_version, namespace, capabilities]
+      properties:
+        api_version: { const: moduregis.io/v1alpha1 }
+        namespace: { type: string }
+        capabilities:
+          type: array
+          items: { $ref: '#/components/schemas/CapabilitySummary' }
+    CapabilityDetail:
+      type: object
+      additionalProperties: false
+      required: [api_version, capability]
+      properties:
+        api_version: { const: moduregis.io/v1alpha1 }
+        capability:
+          allOf:
+            - $ref: '#/components/schemas/CapabilitySummary'
+            - type: object
+              required: [contract]
+              properties:
+                contract: { type: object }
+    APIError:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }

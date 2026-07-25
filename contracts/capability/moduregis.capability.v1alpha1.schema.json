@@ -1,0 +1,568 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.axisrobo.com/moduregis.capability.v1alpha1.schema.json",
+  "title": "Moduregis Capability Contract v1alpha1",
+  "description": "A strict registry definition for an enterprise capability. Registry lifecycle, publication state, signatures, and attestation results are authoritative Moduregis records and are not mutable fields in this contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "kind",
+    "id",
+    "version",
+    "display_name",
+    "description",
+    "signature",
+    "permissions",
+    "owner",
+    "executor",
+    "governance"
+  ],
+  "properties": {
+    "api_version": {
+      "const": "moduregis.io/v1alpha1"
+    },
+    "kind": {
+      "const": "Capability"
+    },
+    "id": {
+      "$ref": "#/$defs/capability_id"
+    },
+    "version": {
+      "$ref": "#/$defs/semver"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "uniqueItems": true,
+      "maxItems": 32
+    },
+    "signature": {
+      "$ref": "#/$defs/signature"
+    },
+    "permissions": {
+      "$ref": "#/$defs/permissions"
+    },
+    "enterprise": {
+      "$ref": "#/$defs/enterprise"
+    },
+    "owner": {
+      "$ref": "#/$defs/owner"
+    },
+    "executor": {
+      "$ref": "#/$defs/executor"
+    },
+    "governance": {
+      "$ref": "#/$defs/governance"
+    }
+  },
+  "$defs": {
+    "capability_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9_]*)+$",
+      "description": "Dotted hierarchical capability identifier. This intentionally matches Harmovela event-type naming; use code_review, not code-review."
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$",
+      "description": "Semantic Versioning 2.0.0 version."
+    },
+    "schema_reference": {
+      "type": "string",
+      "format": "uri-reference",
+      "pattern": "^(?![a-zA-Z][a-zA-Z0-9+.-]*:).+",
+      "description": "A non-empty relative reference within the published capability artifact. Registry publication resolves and validates it; remote schemas are not fetched at invocation time."
+    },
+    "field_definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Stable semantic type name."
+        },
+        "schema": {
+          "$ref": "#/$defs/schema_reference"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Annotation for callers. Validators do not insert this default."
+        }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/capability_id",
+          "description": "Registered, machine-evaluable predicate identifier."
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Predicate input values. This is an intentional open data map, evaluated according to the referenced predicate contract."
+        }
+      }
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "resource", "reversible"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Controlled action verb, such as read, write, delete, deploy, or notify."
+        },
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Canonical resource class or resource reference."
+        },
+        "classification": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "uniqueItems": true
+        },
+        "reversible": {
+          "type": "boolean"
+        }
+      }
+    },
+    "idempotency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": {
+          "enum": ["idempotent", "idempotent_with_freshness", "non_idempotent"]
+        },
+        "freshness_window_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "idempotent_with_freshness"
+              }
+            },
+            "required": ["mode"]
+          },
+          "then": {
+            "properties": {
+              "freshness_window_ms": true
+            },
+            "required": ["freshness_window_ms"]
+          },
+          "else": {
+            "not": {
+              "properties": {
+                "freshness_window_ms": true
+              },
+              "required": ["freshness_window_ms"]
+            }
+          }
+        }
+      ]
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["retry_strategy"],
+      "properties": {
+        "compensation": {
+          "$ref": "#/$defs/capability_id",
+          "description": "Published compensation capability identifier."
+        },
+        "rollback": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Executor-specific rollback action identifier."
+        },
+        "retry_strategy": {
+          "enum": ["none", "at_most_once", "exponential_backoff", "linear"]
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "retry_strategy": {
+                "const": "none"
+              }
+            },
+            "required": ["retry_strategy"]
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "max_retries": true
+              },
+              "required": ["max_retries"]
+            }
+          },
+          "else": {
+            "properties": {
+              "max_retries": true
+            },
+            "required": ["max_retries"]
+          }
+        }
+      ]
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputs", "outputs", "preconditions", "postconditions"],
+      "properties": {
+        "inputs": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/field_definition"
+          }
+        },
+        "outputs": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/field_definition"
+          }
+        },
+        "preconditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "uniqueItems": true,
+          "description": "Machine-evaluable predicates that must hold before invocation. An empty array explicitly declares no preconditions."
+        },
+        "postconditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "uniqueItems": true,
+          "description": "Machine-evaluable predicates guaranteed after successful execution. An empty array explicitly declares no postconditions."
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/effect"
+          },
+          "uniqueItems": true
+        },
+        "idempotency": {
+          "$ref": "#/$defs/idempotency"
+        },
+        "recovery": {
+          "$ref": "#/$defs/recovery"
+        }
+      }
+    },
+    "permission_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["permission"],
+      "properties": {
+        "permission": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(?::[a-z][a-z0-9_]*)+$",
+          "description": "AEGIVELA permission name, such as repo:read or cluster:deploy."
+        },
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Optional resource boundary to which the permission is limited."
+        }
+      }
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": {
+          "enum": ["disabled", "allowlisted", "open"]
+        },
+        "hosts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 253
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "allowlisted"
+              }
+            },
+            "required": ["mode"]
+          },
+          "then": {
+            "properties": {
+              "hosts": true
+            },
+            "required": ["hosts"]
+          },
+          "else": {
+            "not": {
+              "properties": {
+                "hosts": true
+              },
+              "required": ["hosts"]
+            }
+          }
+        }
+      ]
+    },
+    "filesystem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": {
+          "enum": ["none", "read_only", "scoped_rw", "full"]
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "enum": ["read_only", "scoped_rw"]
+              }
+            },
+            "required": ["mode"]
+          },
+          "then": {
+            "properties": {
+              "paths": true
+            },
+            "required": ["paths"]
+          },
+          "else": {
+            "not": {
+              "properties": {
+                "paths": true
+              },
+              "required": ["paths"]
+            }
+          }
+        }
+      ]
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "network", "filesystem"],
+      "properties": {
+        "scope": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/permission_scope"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Maximum permission envelope requested by this Capability. AEGIVELA may further attenuate it per invocation."
+        },
+        "network": {
+          "$ref": "#/$defs/network"
+        },
+        "filesystem": {
+          "$ref": "#/$defs/filesystem"
+        },
+        "max_runtime_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_memory_mb": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "enterprise": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "business_domain": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "uniqueItems": true
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "enum": ["global", "na", "eu", "apac", "latam", "mea"]
+          },
+          "uniqueItems": true
+        },
+        "business_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "uniqueItems": true
+        },
+        "apqc_processes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["category_id", "process_name"],
+            "properties": {
+              "category_id": {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d+){0,4}$"
+              },
+              "process_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              }
+            }
+          },
+          "uniqueItems": true
+        },
+        "compliance_frameworks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_ref", "team"],
+      "properties": {
+        "subject_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "AEGIVELA subject or group reference for the accountable owner."
+        },
+        "team": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "executor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": {
+          "enum": ["praxovela", "rheovela", "limenora", "external"]
+        },
+        "ref": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "Executor registration reference. The Registry verifies its identity during publication."
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["risk_level", "policy_set_ref", "approval_mode", "evidence_profile"],
+      "properties": {
+        "risk_level": {
+          "enum": ["L0", "L1", "L2", "L3", "L4", "L5"]
+        },
+        "policy_set_ref": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "AEGIVELA policy-set reference."
+        },
+        "approval_mode": {
+          "enum": ["policy_determined", "always_required", "not_required"]
+        },
+        "evidence_profile": {
+          "enum": ["none", "standard", "high_assurance"]
+        }
+      }
+    }
+  }
+}

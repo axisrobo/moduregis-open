@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.axisrobo.com/moduregis.invocation.v1alpha1.schema.json",
+  "title": "Moduregis Invocation v1alpha1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "kind", "capability_id", "version", "namespace", "idempotency_key"],
+  "properties": {
+    "api_version": { "const": "moduregis.io/v1alpha1" },
+    "kind": { "const": "Invocation" },
+    "capability_id": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "namespace": { "type": "string", "minLength": 1 },
+    "idempotency_key": { "type": "string", "minLength": 1 },
+    "input": { "type": "object" }
+  }
+}
