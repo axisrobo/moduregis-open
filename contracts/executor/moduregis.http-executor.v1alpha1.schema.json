@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.axisrobo.com/moduregis.http-executor.v1alpha1.schema.json",
+  "title": "Moduregis HTTP Executor Adapter Contract v1alpha1",
+  "description": "An immutable HTTP executor deployment contract linked to an existing Adapter Manifest. Credentials and bearer tokens are intentionally excluded. Routes are keyed by route ID, structurally enforcing route-ID uniqueness after JSON parsing.",
+  "type": "object", "additionalProperties": false,
+  "required": ["api_version", "kind", "adapter_ref", "base_url", "grant_delivery", "timeouts", "tls", "egress_policy", "routes"],
+  "properties": {
+    "api_version": {"const": "moduregis.io/v1alpha1"}, "kind": {"const": "HTTPExecutorAdapter"},
+    "adapter_ref": {"type": "string", "pattern": "^adapter://[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+@(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$"},
+    "base_url": {"type": "string", "format": "uri", "description": "The Go admission parser enforces host equality with tls.server_name and egress_policy.allowed_hosts before persistence.", "pattern": "^https://[^/?#@]+(?:/[^?#]*)?$"},
+    "grant_delivery": {"const": "authorization_header"},
+    "timeouts": {"type": "object", "additionalProperties": false, "required": ["connect_ms", "response_header_ms", "request_ms"], "properties": {"connect_ms": {"type": "integer", "minimum": 1, "maximum": 60000}, "response_header_ms": {"type": "integer", "minimum": 1, "maximum": 60000}, "request_ms": {"type": "integer", "minimum": 1, "maximum": 300000}}},
+    "tls": {"type": "object", "additionalProperties": false, "required": ["server_name", "ca_bundle_ref", "mtls_required"], "properties": {"server_name": {"type": "string", "format": "hostname"}, "ca_bundle_ref": {"type": "string", "format": "uri", "minLength": 1}, "mtls_required": {"type": "boolean"}}},
+    "egress_policy": {"type": "object", "additionalProperties": false, "required": ["allowed_hosts", "reject_private_addresses"], "properties": {"allowed_hosts": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "format": "hostname"}}, "reject_private_addresses": {"const": true}}},
+    "routes": {"type": "object", "minProperties": 1, "propertyNames": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-z][a-z0-9_]*$"}, "additionalProperties": {"$ref": "#/$defs/route"}}
+  },
+  "$defs": {
+    "relative_schema_ref": {"type": "string", "format": "uri-reference", "pattern": "^(?!/)(?![a-zA-Z][a-zA-Z0-9+.-]*:)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[?#%\\\\]).+$"},
+    "route": {"type": "object", "additionalProperties": false, "required": ["method", "path", "input_schema_ref", "output_schema_ref", "response"], "properties": {"method": {"enum": ["POST", "PUT", "PATCH", "GET", "DELETE"]}, "path": {"type": "string", "pattern": "^/(?!/)(?!.*//)(?!.*\\.\\.)(?!.*[?#%\\\\]).*$"}, "input_schema_ref": {"$ref": "#/$defs/relative_schema_ref"}, "output_schema_ref": {"$ref": "#/$defs/relative_schema_ref"}, "response": {"type": "object", "additionalProperties": false, "required": ["execution_reference_field", "outcome_reference_field", "evidence_references_field"], "properties": {"execution_reference_field": {"const": "execution_ref"}, "outcome_reference_field": {"const": "outcome_ref"}, "evidence_references_field": {"const": "evidence_refs"}}}}}
+  }
+}

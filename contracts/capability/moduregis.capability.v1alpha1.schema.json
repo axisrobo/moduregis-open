@@ -532,15 +532,51 @@
       "required": ["kind", "ref"],
       "properties": {
         "kind": {
-          "enum": ["praxovela", "rheovela", "limenora", "external"]
+          "enum": ["praxovela", "rheovela", "limenora", "external", "http"]
         },
         "ref": {
           "type": "string",
           "format": "uri",
           "minLength": 1,
           "description": "Executor registration reference. The Registry verifies its identity during publication."
+        },
+        "route_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z][a-z0-9_]*$"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "http"
+              }
+            },
+            "required": ["kind"]
+          },
+          "then": {
+            "properties": {
+              "route_id": true,
+              "ref": {
+                "type": "string",
+                "pattern": "^adapter://[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+@(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$"
+              }
+            },
+            "required": ["route_id"]
+          },
+          "else": {
+            "not": {
+              "properties": {
+                "route_id": true
+              },
+              "required": ["route_id"]
+            }
+          }
+        }
+      ]
     },
     "governance": {
       "type": "object",

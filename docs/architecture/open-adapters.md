@@ -47,6 +47,8 @@ It deliberately excludes credentials, long-lived tokens, private endpoint config
 
 Manifest parsing is intentionally not activation. A parsed manifest has no authority to receive Capability calls until Adapter Registry verification, Attestor, Governor, and AEGIVELA steps complete.
 
+Adapter Manifest identity and lifecycle are separate from an immutable HTTP executor deployment Contract. The Manifest identifies an Adapter version and its kind; the HTTP Contract supplies that version's HTTPS endpoint, egress limits, and named routes. An `http` Capability can be admitted for publication only when its exact `adapter_ref` resolves to an active execution Adapter and the immutable HTTP Contract for that same tenant, namespace, Adapter ID, and version contains its `route_id`.
+
 ## Adapter Registry
 
 Moduregis now persists tenant/namespace-scoped immutable Adapter Manifest versions with `draft`, `verified`, `active`, `suspended`, and `revoked` lifecycle states. PostgreSQL RLS applies to both versions and transition history.

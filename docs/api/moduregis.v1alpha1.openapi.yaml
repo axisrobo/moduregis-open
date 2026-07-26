@@ -47,6 +47,65 @@ paths:
           $ref: '#/components/responses/AuthorizationDenied'
         '503':
           $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/adapters/{id}/versions/{version}/http-executor:
+    post:
+      operationId: registerHTTPExecutorContract
+      summary: Register an immutable HTTP executor deployment contract
+      description: This contract surface is declared before its HTTP handler is implemented.
+      security:
+        - bearerAuth: [adapter:activate]
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HTTPExecutorAdapter'
+      responses:
+        '201':
+          description: Immutable HTTP executor contract registered.
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+    get:
+      operationId: getHTTPExecutorContract
+      summary: Read an immutable HTTP executor deployment contract
+      description: This contract surface is declared before its HTTP handler is implemented.
+      security:
+        - bearerAuth: [adapter:activate]
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Immutable HTTP executor contract.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPExecutorAdapter'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
   /v1/capabilities/{id}/versions/{version}:
     get:
       operationId: getCapabilityVersion
@@ -160,3 +219,62 @@ components:
       properties:
         code: { type: string }
         message: { type: string }
+    HTTPExecutorAdapter:
+      type: object
+      additionalProperties: false
+      required: [api_version, kind, adapter_ref, base_url, grant_delivery, timeouts, tls, egress_policy, routes]
+      properties:
+        api_version: { const: moduregis.io/v1alpha1 }
+        kind: { const: HTTPExecutorAdapter }
+        adapter_ref: { type: string, format: uri }
+        base_url: { type: string, format: uri }
+        grant_delivery: { const: authorization_header }
+        timeouts:
+          type: object
+          additionalProperties: false
+          required: [connect_ms, response_header_ms, request_ms]
+          properties:
+            connect_ms: { type: integer, minimum: 1, maximum: 60000 }
+            response_header_ms: { type: integer, minimum: 1, maximum: 60000 }
+            request_ms: { type: integer, minimum: 1, maximum: 300000 }
+        tls:
+          type: object
+          additionalProperties: false
+          required: [server_name, ca_bundle_ref, mtls_required]
+          properties:
+            server_name: { type: string, format: hostname }
+            ca_bundle_ref: { type: string, format: uri }
+            mtls_required: { type: boolean }
+        egress_policy:
+          type: object
+          additionalProperties: false
+          required: [allowed_hosts, reject_private_addresses]
+          properties:
+            allowed_hosts:
+              type: array
+              minItems: 1
+              uniqueItems: true
+              items: { type: string, format: hostname }
+            reject_private_addresses: { const: true }
+        routes:
+          type: object
+          minProperties: 1
+          additionalProperties:
+            $ref: '#/components/schemas/HTTPExecutorRoute'
+    HTTPExecutorRoute:
+      type: object
+      additionalProperties: false
+      required: [method, path, input_schema_ref, output_schema_ref, response]
+      properties:
+        method: { enum: [POST, PUT, PATCH, GET, DELETE] }
+        path: { type: string, pattern: '^/(?!/)(?!.*//)(?!.*\\.\\.).*$' }
+        input_schema_ref: { type: string }
+        output_schema_ref: { type: string }
+        response:
+          type: object
+          additionalProperties: false
+          required: [execution_reference_field, outcome_reference_field, evidence_references_field]
+          properties:
+            execution_reference_field: { const: execution_ref }
+            outcome_reference_field: { const: outcome_ref }
+            evidence_references_field: { const: evidence_refs }
