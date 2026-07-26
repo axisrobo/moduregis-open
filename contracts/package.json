@@ -1,0 +1,11 @@
+{
+  "name": "moduregis-open-contracts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:openapi": "node scripts/validate-openapi-http-executor.mjs"
+  },
+  "devDependencies": {
+    "yaml": "^2.5.1"
+  }
+}
