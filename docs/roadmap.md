@@ -1,5 +1,21 @@
 # Moduregis Product Roadmap
 
+## Current Release Status
+
+Published releases `v1.0.0` through `v1.3.0` (and the matching `moduregis-open`
+contracts, API specification, and Go SDK) cover:
+
+- Governed Capability publication with immutable Registry versions, lifecycle
+  transitions (suspend, deprecate, revoke, reactivate, retire), and durable
+  audit evidence.
+- Catalog projections, structured filtering, version comparison, attestation
+  reports, and publication approval positions.
+- CapabilityPlan governance: the `CapabilityPlan v1alpha1` Contract, plan
+  registry, governed plan revisions and lifecycle transitions, plan approval
+  positions, and attestation evidence.
+- A fail-closed ORCHADYN planning adapter port; RHEOVELA materialization
+  references are declared by Contract and never executed by Moduregis.
+
 ## Outcome
 
 Moduregis becomes the enterprise control plane for the complete Capability path:
@@ -22,7 +38,7 @@ Each phase is a deployable vertical slice. A later phase must not begin by repla
 
 **Exit criteria:** one Skill Package produces a validated Contract and executes through one authorized Capability implementation; a denied or revoked request does not reach AXON; all control-plane actions preserve tenant, actor, policy, trace, and evidence context.
 
-## Phase 1: Governed Publication
+## Phase 1: Governed Publication — Released
 
 **Objective:** make a verified Contract safely publishable, discoverable, and revocable.
 
@@ -34,7 +50,7 @@ Each phase is a deployable vertical slice. A later phase must not begin by repla
 
 **Exit criteria:** a user can trace a published Capability to an owner, policy decision, attestation evidence, immutable Contract version, and revocation history.
 
-## Phase 2: Resolve, Authorize, Invoke
+## Phase 2: Resolve, Authorize, Invoke — Released
 
 **Objective:** support governed single-Capability execution.
 
@@ -46,7 +62,7 @@ Each phase is a deployable vertical slice. A later phase must not begin by repla
 
 **Exit criteria:** an authorized caller can invoke a CRM, HR, or Finance Capability; a denied, expired, or revoked request cannot reach an executor.
 
-## Phase 3: Plan Governance and Process Materialization
+## Phase 3: Plan Governance and Process Materialization — Core Plan Governance Released
 
 **Objective:** govern multi-Capability plans without becoming a planner or workflow engine.
 
@@ -55,6 +71,12 @@ Each phase is a deployable vertical slice. A later phase must not begin by repla
 - Validate Plan references against published Contract versions and current policy.
 - Send approved long-running Plans to RHEOVELA for materialization and preserve plan/process linkage.
 - Correlate Harmovela task and delegation references with Moduregis audit records.
+
+**Core status:** the `CapabilityPlan v1alpha1` Contract, plan registry, governed
+plan revisions and lifecycle transitions, plan approval positions, attestation
+evidence, and the fail-closed ORCHADYN planning adapter port are released.
+RHEOVELA materialization and Harmovela task/delegation correlation remain
+adapter-boundary work.
 
 **Exit criteria:** a Plan can be produced, governed, approved, materialized, paused for human approval, compensated, and audited end-to-end.
 

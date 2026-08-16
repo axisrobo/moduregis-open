@@ -12,9 +12,10 @@ MODUREGIS provides a governed lifecycle for enterprise capabilities — declared
 - **HTTPExecutorAdapter v1alpha1** — Generic HTTPS executor Contract with route, TLS, timeout, and egress constraints. The first Beta uses this Contract instead of a PRAXOVELA-specific runtime adapter.
 - **Contract Validation** — Versioned JSON Schemas and positive/negative fixtures serve as the conformance reference for any SDK or executor adapter.
 - **Catalog API Contracts** — REST API surface for capability discovery and resolution, including intent matching and candidate explanation.
+- **CapabilityPlan Contract** — Versioned `CapabilityPlan v1alpha1` schema and fixtures for governed multi-Capability plans, with plan registry, revision, approval-position, and attestation semantics.
 - **Governance Adapter Contracts** — Versioned, language-neutral contracts for integrating AEGIVELA (authorization), ORCHADYN (planning), PRAXOVELA (execution), RHEOVELA (workflow), MNEMOVELA (memory), and Harmovela (coordination).
 - **Console** — TypeScript/React reference Console for capability Catalog, publication workflow, and audit views.
-- **SDK** — Go SDK reference for consuming the MODUREGIS API.
+- **SDK** — Go SDK reference for consuming the MODUREGIS API (catalog, invocation, lifecycle transitions, governance evidence, and plan methods).
 
 ## Architecture
 
