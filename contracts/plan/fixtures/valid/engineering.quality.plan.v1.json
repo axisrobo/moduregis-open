@@ -1,0 +1,29 @@
+{
+  "api_version": "moduregis.io/v1alpha1",
+  "kind": "CapabilityPlan",
+  "id": "engineering.quality.plan",
+  "version": "1.0.0",
+  "display_name": "Quality engineering plan",
+  "targets": [
+    {
+      "capability_id": "engineering.quality.code_review",
+      "version": "1.0.0",
+      "ref": "moduregis://capabilities/engineering.quality.code_review@1.0.0"
+    }
+  ],
+  "materialization": {
+    "workflow_ref": "rheovela://workflows/quality-plan",
+    "durable": true,
+    "compensation_ref": "rheovela://workflows/quality-plan-rollback"
+  },
+  "owner": {
+    "subject_ref": "aegivela://groups/engineering-platform",
+    "team": "Engineering Platform"
+  },
+  "governance": {
+    "risk_level": "L2",
+    "policy_set_ref": "aegivela://policy-sets/eng-review-v1",
+    "approval_mode": "policy_determined",
+    "evidence_profile": "standard"
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.axisrobo.com/moduregis.plan.v1alpha1.schema.json",
+  "title": "Moduregis CapabilityPlan Contract v1alpha1",
+  "description": "A strict registry definition for a governed enterprise capability plan. Registry lifecycle, publication state, revisions, and approval positions are authoritative Moduregis records and are not mutable fields in this contract. Moduregis governs plans but does not become a planner (ORCHADYN) or a durable workflow engine (RHEOVELA).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "kind",
+    "id",
+    "version",
+    "display_name",
+    "targets",
+    "materialization",
+    "owner",
+    "governance"
+  ],
+  "properties": {
+    "api_version": {
+      "const": "moduregis.io/v1alpha1"
+    },
+    "kind": {
+      "const": "CapabilityPlan"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9_]*)+$"
+    },
+    "version": {
+      "$ref": "#/$defs/semver"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/target"
+      }
+    },
+    "materialization": {
+      "$ref": "#/$defs/materialization"
+    },
+    "owner": {
+      "$ref": "#/$defs/owner"
+    },
+    "governance": {
+      "$ref": "#/$defs/governance"
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$",
+      "description": "Semantic Versioning 2.0.0 version."
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capability_id", "version", "ref"],
+      "properties": {
+        "capability_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1
+        }
+      }
+    },
+    "materialization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workflow_ref", "durable", "compensation_ref"],
+      "properties": {
+        "workflow_ref": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "Reference to the RHEOVELA durable workflow that materializes this plan."
+        },
+        "durable": {
+          "const": true,
+          "description": "Materialization must be durable; Moduregis never executes workflows itself."
+        },
+        "compensation_ref": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_ref", "team"],
+      "properties": {
+        "subject_ref": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1
+        },
+        "team": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["risk_level", "policy_set_ref", "approval_mode", "evidence_profile"],
+      "properties": {
+        "risk_level": {
+          "enum": ["L0", "L1", "L2", "L3", "L4", "L5"]
+        },
+        "policy_set_ref": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "AEGIVELA policy-set reference."
+        },
+        "approval_mode": {
+          "enum": ["policy_determined", "always_required", "not_required"]
+        },
+        "evidence_profile": {
+          "enum": ["none", "standard", "high_assurance"]
+        }
+      }
+    }
+  }
+}

@@ -137,6 +137,728 @@ paths:
           $ref: '#/components/responses/CapabilityNotFound'
         '503':
           $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/publications/{id}/versions/{version}/publish:
+    post:
+      operationId: publishCapability
+      summary: Publish an authorized immutable Capability version
+      description: |
+        AEGIVELA evaluates capability:publish for the requested namespace. The
+        Registry remains authoritative for lifecycle state, and publication does
+        not modify the immutable Capability Contract.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LifecycleRequest'
+      responses:
+        '200':
+          description: Capability version is published or was already published.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CapabilityDetail' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '500':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/capabilities/{id}/versions/{base}/compare/{target}:
+    get:
+      operationId: compareCapabilityVersions
+      summary: Compare two versions of one Capability contract
+      description: |
+        Reports the semver relation, digest change, and top-level contract field
+        differences between two versions of the same Capability.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: base
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: target
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Comparison of the two Capability versions.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [api_version, comparison]
+                properties:
+                  api_version: { const: moduregis.io/v1alpha1 }
+                  comparison: { $ref: '#/components/schemas/VersionComparison' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/capabilities/{id}/versions/{version}/attestations:
+    get:
+      operationId: listCapabilityAttestations
+      summary: Read attestation evidence for one Capability version
+      description: |
+        Returns the tenant-scoped immutable attestation evidence references for
+        one Capability version. Read-only; it never authorizes or mutates state.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Immutable attestation evidence references for the version.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttestationReport' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/capabilities/{id}/versions/{version}/approval-position:
+    get:
+      operationId: getCapabilityApprovalPosition
+      summary: Read the publication approval position for one Capability version
+      description: |
+        Reports whether approval is required for publication, whether verified
+        attestation evidence exists, and whether the publication gate is
+        currently satisfiable. Read-only; AEGIVELA remains the approval authority.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Publication approval position derived from the Registry and Attestor.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApprovalPosition' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/capabilities/{id}/versions/{version}/suspend:
+    post:
+      operationId: suspendCapability
+      summary: Suspend a published Capability version
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: Capability version is suspended.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CapabilityDetail' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/capabilities/{id}/versions/{version}/deprecate:
+    post:
+      operationId: deprecateCapability
+      summary: Deprecate a published Capability version
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: Capability version is deprecated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CapabilityDetail' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/capabilities/{id}/versions/{version}/revoke:
+    post:
+      operationId: revokeCapability
+      summary: Revoke a published, suspended, or deprecated Capability version
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: Capability version is revoked.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CapabilityDetail' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/capabilities/{id}/versions/{version}/reactivate:
+    post:
+      operationId: reactivateCapability
+      summary: Reactivate a suspended Capability version
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: Capability version is reactivated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CapabilityDetail' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/capabilities/{id}/versions/{version}/retire:
+    post:
+      operationId: retireCapability
+      summary: Retire a deprecated Capability version
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: Capability version is retired.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CapabilityDetail' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans:
+    post:
+      operationId: registerPlan
+      summary: Register an immutable CapabilityPlan Contract draft
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [namespace, contract]
+              properties:
+                namespace: { type: string, minLength: 1 }
+                contract: { $ref: '#/components/schemas/CapabilityPlan' }
+      responses:
+        '201':
+          description: Immutable CapabilityPlan Contract registered as a draft.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+    get:
+      operationId: listPlans
+      summary: List plan versions in an authorized namespace
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+      responses:
+        '200':
+          description: Tenant-scoped plan version summaries.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [api_version, namespace, plans]
+                properties:
+                  api_version: { const: moduregis.io/v1alpha1 }
+                  namespace: { type: string }
+                  plans:
+                    type: array
+                    items: { $ref: '#/components/schemas/PlanSummary' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans/{id}/versions/{version}:
+    get:
+      operationId: getPlanVersion
+      summary: Read one immutable CapabilityPlan Contract version
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Authorized immutable plan version.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans/{id}/versions/{version}/publish:
+    post:
+      operationId: publishPlan
+      summary: Publish a verified CapabilityPlan revision
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: The plan revision was published.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans/{id}/versions/{version}/suspend:
+    post:
+      operationId: suspendPlan
+      summary: Suspend a published plan revision
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: The plan revision was suspended.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans/{id}/versions/{version}/deprecate:
+    post:
+      operationId: deprecatePlan
+      summary: Deprecate a published plan revision
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: The plan revision was deprecated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans/{id}/versions/{version}/revoke:
+    post:
+      operationId: revokePlan
+      summary: Revoke a plan revision
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: The plan revision was revoked.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans/{id}/versions/{version}/reactivate:
+    post:
+      operationId: reactivatePlan
+      summary: Reactivate a suspended plan revision
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: The plan revision was reactivated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans/{id}/versions/{version}/retire:
+    post:
+      operationId: retirePlan
+      summary: Retire a deprecated plan revision
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleRequest' }
+      responses:
+        '200':
+          description: The plan revision was retired.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans/{id}/versions/{version}/attestations:
+    get:
+      operationId: listPlanAttestations
+      summary: Read attestation evidence for one plan version
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Immutable attestation evidence references for the plan version.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttestationReport' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/plans/{id}/versions/{version}/approval-position:
+    get:
+      operationId: getPlanApprovalPosition
+      summary: Read the approval position for one plan version
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: version
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Approval position derived from the plan Registry and Attestor.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApprovalPosition' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
 components:
   securitySchemes:
     bearerAuth:
@@ -219,3 +941,132 @@ components:
       properties:
         code: { type: string }
         message: { type: string }
+    LifecycleRequest:
+      type: object
+      additionalProperties: false
+      required: [trace_id, audit_event_id]
+      properties:
+        trace_id: { type: string, minLength: 1 }
+        audit_event_id: { type: string, minLength: 1 }
+    VersionComparison:
+      type: object
+      additionalProperties: false
+      required: [capability_id, base_version, target_version, base_digest, target_digest, version_relation, digest_changed]
+      properties:
+        capability_id: { type: string, minLength: 1 }
+        base_version: { type: string, minLength: 1 }
+        target_version: { type: string, minLength: 1 }
+        base_digest: { type: string, minLength: 1 }
+        target_digest: { type: string, minLength: 1 }
+        version_relation: { enum: [newer, older, equal] }
+        digest_changed: { type: boolean }
+        field_changes:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [field, change]
+            properties:
+              field: { type: string, minLength: 1 }
+              change: { enum: [added, removed, changed] }
+              from: {}
+              to: {}
+    AttestationReport:
+      type: object
+      additionalProperties: false
+      required: [api_version, version, attestations]
+      properties:
+        api_version: { const: moduregis.io/v1alpha1 }
+        capability_id: { type: string }
+        plan_id: { type: string }
+        version: { type: string, minLength: 1 }
+        attestations:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [attestation_id, issuer, artifact_digest, evidence_ref, status, occurred_at]
+            properties:
+              attestation_id: { type: string, minLength: 1 }
+              issuer: { type: string, minLength: 1 }
+              artifact_digest: { type: string, minLength: 1 }
+              evidence_ref: { type: string, minLength: 1 }
+              status: { enum: [verified, rejected] }
+              occurred_at: { type: string, format: date-time }
+    ApprovalPosition:
+      type: object
+      additionalProperties: false
+      required: [approval_mode, approval_required, has_verified_evidence, gate_satisfiable, status]
+      properties:
+        capability_id: { type: string }
+        plan_id: { type: string }
+        version: { type: string, minLength: 1 }
+        risk_level: { type: string }
+        policy_set_ref: { type: string }
+        approval_mode: { enum: [policy_determined, always_required, not_required] }
+        approval_required: { type: boolean }
+        has_verified_evidence: { type: boolean }
+        gate_satisfiable: { type: boolean }
+        status: { enum: [approved, pending, not_required] }
+    CapabilityPlan:
+      type: object
+      additionalProperties: false
+      required: [api_version, kind, id, version, display_name, targets, materialization, owner, governance]
+      properties:
+        api_version: { const: moduregis.io/v1alpha1 }
+        kind: { const: CapabilityPlan }
+        id: { type: string, minLength: 1 }
+        version: { type: string, minLength: 1 }
+        display_name: { type: string, minLength: 1 }
+        targets:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [capability_id, version, ref]
+            properties:
+              capability_id: { type: string, minLength: 1 }
+              version: { type: string, minLength: 1 }
+              ref: { type: string, format: uri }
+        materialization:
+          type: object
+          additionalProperties: false
+          required: [workflow_ref, durable, compensation_ref]
+          properties:
+            workflow_ref: { type: string, format: uri }
+            durable: { const: true }
+            compensation_ref: { type: string, format: uri }
+        owner:
+          type: object
+          additionalProperties: false
+          required: [subject_ref, team]
+          properties:
+            subject_ref: { type: string, format: uri }
+            team: { type: string, minLength: 1 }
+        governance:
+          type: object
+          additionalProperties: false
+          required: [risk_level, policy_set_ref, approval_mode, evidence_profile]
+          properties:
+            risk_level: { enum: [L0, L1, L2, L3, L4, L5] }
+            policy_set_ref: { type: string, format: uri }
+            approval_mode: { enum: [policy_determined, always_required, not_required] }
+            evidence_profile: { enum: [none, standard, high_assurance] }
+    PlanSummary:
+      type: object
+      additionalProperties: false
+      required: [id, version, state, contract_digest]
+      properties:
+        id: { type: string, minLength: 1 }
+        version: { type: string, minLength: 1 }
+        state: { enum: [draft, submitted, verified, published, suspended, deprecated, revoked, retired] }
+        contract_digest: { type: string, minLength: 1 }
+        contract: { type: object }
+    PlanResponse:
+      type: object
+      additionalProperties: false
+      required: [api_version, plan]
+      properties:
+        api_version: { const: moduregis.io/v1alpha1 }
+        plan: { $ref: '#/components/schemas/PlanSummary' }
