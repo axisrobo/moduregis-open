@@ -480,6 +480,68 @@ paths:
           $ref: '#/components/responses/CapabilityNotFound'
         '503':
           $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/invocations:
+    post:
+      operationId: invokeCapability
+      summary: Submit an authorized Capability invocation
+      description: |
+        AEGIVELA evaluates capability:invoke using the bearer artifact. The caller
+        must retain one idempotency_key while retrying the same logical submission.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InvocationRequest' }
+      responses:
+        '200':
+          description: The idempotent invocation already completed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InvocationResponse' }
+        '202':
+          description: The invocation has been accepted or is in progress.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InvocationResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
+  /v1/invocations/{id}:
+    get:
+      operationId: getInvocation
+      summary: Read an authorized invocation record
+      description: AEGIVELA evaluates capability:read in the requested namespace.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Authorized invocation state and evidence references.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InvocationResponse' }
+        '400':
+          $ref: '#/components/responses/MissingBearer'
+        '401':
+          $ref: '#/components/responses/MissingBearer'
+        '403':
+          $ref: '#/components/responses/AuthorizationDenied'
+        '404':
+          $ref: '#/components/responses/CapabilityNotFound'
+        '503':
+          $ref: '#/components/responses/AuthorizationUnavailable'
   /v1/plans:
     post:
       operationId: registerPlan
@@ -948,6 +1010,50 @@ components:
       properties:
         trace_id: { type: string, minLength: 1 }
         audit_event_id: { type: string, minLength: 1 }
+    CapabilityRegistrationRequest:
+      type: object
+      additionalProperties: false
+      required: [namespace, contract]
+      properties:
+        namespace: { type: string, minLength: 1 }
+        contract: { type: object, additionalProperties: true }
+    PublicationRequest:
+      type: object
+      additionalProperties: false
+      required: [trace_id, audit_event_id]
+      properties:
+        trace_id: { type: string, minLength: 1 }
+        audit_event_id: { type: string, minLength: 1 }
+    CapabilityResponse:
+      type: object
+      additionalProperties: false
+      required: [api_version, capability]
+      properties:
+        api_version: { const: moduregis.io/v1alpha1 }
+        capability: { $ref: '#/components/schemas/CapabilitySummary' }
+    InvocationRequest:
+      type: object
+      additionalProperties: false
+      required: [capability_id, version, namespace, idempotency_key, input]
+      properties:
+        capability_id: { type: string, minLength: 1 }
+        version: { type: string, minLength: 1 }
+        namespace: { type: string, minLength: 1 }
+        idempotency_key: { type: string, minLength: 1 }
+        input: {}
+    InvocationResponse:
+      type: object
+      additionalProperties: false
+      required: [api_version, invocation_id, status]
+      properties:
+        api_version: { const: moduregis.io/v1alpha1 }
+        invocation_id: { type: string }
+        status: { enum: [reserved, dispatched, completed, failed, denied] }
+        execution_reference: { type: string }
+        outcome_reference: { type: string }
+        evidence_refs:
+          type: array
+          items: { type: string }
     VersionComparison:
       type: object
       additionalProperties: false

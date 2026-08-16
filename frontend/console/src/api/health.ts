@@ -1,14 +1,10 @@
+import type { ApiClient } from "./client";
+
 export type HealthStatus = "checking" | "available" | "unavailable";
 
-const apiBase = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
-
-export async function checkHealth(signal: AbortSignal): Promise<HealthStatus> {
+export async function checkHealth(apiClient: ApiClient, signal: AbortSignal): Promise<HealthStatus> {
   try {
-    const response = await fetch(`${apiBase}/v1/health`, { signal });
-    if (!response.ok) {
-      return "unavailable";
-    }
-    const body = (await response.json()) as { status?: string };
+    const body = await apiClient.get<{ status?: string }>("/v1/health", signal);
     return body.status === "ok" ? "available" : "unavailable";
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {

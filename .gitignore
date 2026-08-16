@@ -18,6 +18,10 @@ go.work.sum
 node_modules/
 vendor/
 
+# Build output
+dist/
+frontend/console/dist/
+
 # IDE
 .idea/
 .vscode/
