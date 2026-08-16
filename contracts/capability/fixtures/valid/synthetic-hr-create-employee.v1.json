@@ -1,0 +1,51 @@
+{
+  "api_version": "moduregis.io/v1alpha1",
+  "kind": "Capability",
+  "id": "synthetic.hr.create_employee",
+  "version": "1.0.0",
+  "display_name": "Synthetic HR create employee",
+  "description": "Creates a synthetic workforce record for governed integration testing.",
+  "tags": ["hr", "synthetic", "api.operation"],
+  "signature": {
+    "inputs": {
+      "employee_reference": {
+        "type": "synthetic_employee_reference",
+        "schema": "schemas/create-employee-input.json",
+        "required": true
+      }
+    },
+    "outputs": {
+      "employee_record_reference": {
+        "type": "synthetic_employee_record_reference",
+        "schema": "schemas/create-employee-output.json"
+      }
+    },
+    "preconditions": [{"id": "synthetic.hr.record_absent"}],
+    "postconditions": [{"id": "synthetic.hr.record_created"}],
+    "effects": [{"action": "write", "resource": "synthetic:hr:employee", "classification": ["synthetic"], "reversible": true}],
+    "idempotency": {"mode": "idempotent"},
+    "recovery": {"retry_strategy": "exponential_backoff", "max_retries": 1}
+  },
+  "permissions": {
+    "scope": [{"permission": "synthetic:hr:write", "resource": "synthetic:hr:employee"}],
+    "network": {"mode": "allowlisted", "hosts": ["hr.synthetic.invalid"]},
+    "filesystem": {"mode": "none"},
+    "max_runtime_ms": 5000,
+    "max_memory_mb": 128
+  },
+  "enterprise": {
+    "business_domain": ["Synthetic Test Data"],
+    "regions": ["global"],
+    "business_capabilities": ["synthetic.hr.operations"],
+    "apqc_processes": [{"category_id": "0.0.0", "process_name": "Synthetic integration testing", "level": 3}],
+    "compliance_frameworks": []
+  },
+  "owner": {"subject_ref": "aegivela://groups/synthetic-integration", "team": "Synthetic Integration"},
+  "executor": {"kind": "http", "ref": "adapter://axisrobo.http.hr@1.0.0", "route_id": "create_employee"},
+  "governance": {
+    "risk_level": "L2",
+    "policy_set_ref": "aegivela://policy-sets/synthetic-hr-v1",
+    "approval_mode": "policy_determined",
+    "evidence_profile": "standard"
+  }
+}
