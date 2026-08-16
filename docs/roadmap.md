@@ -2,7 +2,7 @@
 
 ## Current Release Status
 
-Published releases `v1.0.0` through `v1.3.0` (and the matching `moduregis-open`
+Published releases `v1.0.0` through `v1.4.0` (and the matching `moduregis-open`
 contracts, API specification, and Go SDK) cover:
 
 - Governed Capability publication with immutable Registry versions, lifecycle

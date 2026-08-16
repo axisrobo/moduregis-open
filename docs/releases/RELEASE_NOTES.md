@@ -3,6 +3,17 @@
 Published versions are immutable. A tag and its published archives are never
 rewritten; behavioral changes require a new version.
 
+## v1.4.0 — Plan Lifecycle and Release Hardening
+
+**Release date:** 2026-08-16
+
+- Governed plan lifecycle transitions (suspend, deprecate, revoke, reactivate,
+  retire) and plan attestation evidence endpoints.
+- Worker catalog projection refresh and metrics listener configuration.
+- Plan attestation subject migration, migration equivalence handling on clean
+  databases, and plan schema inclusion in the contract compatibility baseline.
+- Support boundaries, release notes, and observability baseline documentation.
+
 ## v1.3.0 — ORCHADYN Planning Adapter Port
 
 **Release date:** 2026-08-16
@@ -51,6 +62,5 @@ rewritten; behavioral changes require a new version.
 
 ## Not Released
 
-Changes on `main` after `v1.3.0` that are not yet tagged include the plan
-attestation subject migration (`0015`) and worker projection deployment
-configuration. They will be included in the next release.
+Changes on `main` after `v1.4.0` that are not yet tagged will be included in
+the next release.
