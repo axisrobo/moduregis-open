@@ -1,0 +1,72 @@
+name: Open Core Quality Gates
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: contracts/package-lock.json
+      - name: Install contract dependencies
+        run: npm ci
+        working-directory: contracts
+      - name: Validate contract fixtures
+        run: npm run test:contracts
+        working-directory: contracts
+      - name: Validate OpenAPI executor reference
+        run: npm run test:openapi
+        working-directory: contracts
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.work
+      - name: Vet SDK
+        run: go vet ./...
+        working-directory: sdk/go
+      - name: Test SDK
+        run: go test ./...
+        working-directory: sdk/go
+      - name: Vet example
+        run: go vet ./...
+        working-directory: examples/web-api-example
+      - name: Build example
+        run: go build ./...
+        working-directory: examples/web-api-example
+
+  console:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/console/package-lock.json
+      - name: Install Console dependencies
+        run: npm ci
+        working-directory: frontend/console
+      - name: Verify generated Console API types
+        run: |
+          npm run generate:api
+          git diff --exit-code -- src/api
+        working-directory: frontend/console
+      - name: Test Console
+        run: npm test
+        working-directory: frontend/console
+      - name: Build Console
+        run: npm run build
+        working-directory: frontend/console
