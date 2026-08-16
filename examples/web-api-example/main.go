@@ -3,15 +3,12 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
-	// Replace with the real SDK import when published:
-	// "github.com/axisrobo/moduregis-open/sdk/go/pepsdk"
+	"github.com/axisrobo/moduregis-open/sdk/go/pepsdk"
 )
 
 func main() {
@@ -19,30 +16,38 @@ func main() {
 	if apiBaseURL == "" {
 		apiBaseURL = "http://localhost:8080"
 	}
+	client := pepsdk.NewClient(apiBaseURL, os.Getenv("MODUREGIS_API_TOKEN"))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /capabilities", func(w http.ResponseWriter, r *http.Request) {
-		backend := apiBaseURL + "/v1/capabilities?namespace=hr"
-		req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, backend, nil)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		req.Header.Set("Authorization", r.Header.Get("Authorization"))
-		client := &http.Client{Timeout: 5 * time.Second}
-		resp, err := client.Do(req)
+		capabilities, err := client.ListCapabilities(r.Context(), r.URL.Query().Get("namespace"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}
-		defer resp.Body.Close()
-		var body any
-		if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{"capabilities": capabilities})
+	})
+
+	mux.HandleFunc("POST /invoke", func(w http.ResponseWriter, r *http.Request) {
+		var request struct {
+			CapabilityID   string `json:"capability_id"`
+			Version        string `json:"version"`
+			Namespace      string `json:"namespace"`
+			IdempotencyKey string `json:"idempotency_key"`
+			Input          any    `json:"input"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		result, err := client.Invoke(r.Context(), request.CapabilityID, request.Version, request.Namespace, request.IdempotencyKey, request.Input)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(body)
+		json.NewEncoder(w).Encode(result)
 	})
 
 	log.Printf("Moduregis example API listening on :3000, proxying to %s", apiBaseURL)
