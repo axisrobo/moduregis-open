@@ -26,6 +26,9 @@ type Client struct {
 	BaseURL            string
 	AuthorizationToken string
 	HTTPClient         *http.Client
+	// Tokens, when set, supplies the bearer credential per call (e.g. an
+	// AEGIVELA workload assertion); it takes precedence over the static token.
+	Tokens TokenSource
 }
 
 // NewClient creates a MODUREGIS API client.
@@ -162,7 +165,17 @@ func (c *Client) doJSON(ctx context.Context, method, path string, body any, out 
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.AuthorizationToken)
+	token := c.AuthorizationToken
+	if c.Tokens != nil {
+		t, err := c.Tokens.Token(ctx)
+		if err != nil {
+			return fmt.Errorf("credential: %w", err)
+		}
+		token = t
+	}
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
