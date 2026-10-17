@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/axisvela/moduregis-open/sdk/go/pepsdk"
+	"github.com/axisvela/moduregis-open/sdk/go/v3/pepsdk"
 )
 
 func main() {
