@@ -54,12 +54,12 @@ Download the latest `moduregis-api` binary from GitHub Releases:
 
 ```powershell
 # Windows (PowerShell)
-Invoke-WebRequest -Uri "https://github.com/axisrobo/moduregis-open/releases/latest/download/moduregis-api.exe" -OutFile moduregis-api.exe
+Invoke-WebRequest -Uri "https://github.com/axisvela/moduregis-open/releases/latest/download/moduregis-api.exe" -OutFile moduregis-api.exe
 ```
 
 ```bash
 # Linux / macOS
-curl -L -o moduregis-api https://github.com/axisrobo/moduregis-open/releases/latest/download/moduregis-api
+curl -L -o moduregis-api https://github.com/axisvela/moduregis-open/releases/latest/download/moduregis-api
 chmod +x moduregis-api
 ```
 

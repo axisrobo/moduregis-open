@@ -10,8 +10,8 @@ Licensing is a separate commercial and legal decision. This document defines fun
 
 | Repository | Responsibility | Dependency direction |
 |---|---|---|
-| `https://github.com/axisrobo/moduregis` | OSS Core, public Contract assets, reference adapters, and shared security fixes | Must stand alone for a complete single-organization control plane |
-| `https://github.com/axisrobo/moduregis-ee` | Enterprise-only modules, packaging, operations, and certified integrations | Depends on published OSS APIs, schemas, SDKs, and extension ports |
+| `https://github.com/axisvela/moduregis` | OSS Core, public Contract assets, reference adapters, and shared security fixes | Must stand alone for a complete single-organization control plane |
+| `https://github.com/axisvela/moduregis-ee` | Enterprise-only modules, packaging, operations, and certified integrations | Depends on published OSS APIs, schemas, SDKs, and extension ports |
 
 The repositories are siblings, not nested repositories or source-tree copies. `moduregis-ee` must pin compatible OSS Contract/API versions and may not import `moduregis` internal Go packages. Shared Contract changes, compatibility fixtures, and security fixes are made in `moduregis` first, then consumed by Enterprise Edition through a released version.
 

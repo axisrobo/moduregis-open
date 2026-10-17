@@ -1,3 +1,3 @@
-module github.com/axisrobo/moduregis-open/sdk/go
+module github.com/axisvela/moduregis-open/sdk/go
 
 go 1.23.0
